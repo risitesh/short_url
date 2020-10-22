@@ -42,10 +42,11 @@ class UrlController extends BaseController {
 
     async redirectShortURL(shortURL) {
         try {
-            const urlExistInCache = await this.wagner.get('Redis').get(shortURL);
+            const urlExistInCache = await this.redis.get(shortURL);
             if (!urlExistInCache) {
                 const existingURL = await this.urlManager.getShortUrl(shortURL);
                 if (existingURL) {
+                    this.emit('setRedis', shortURL, existingURL.originalUrl);
                     return { code: 301, data: { longURL: existingURL.originalUrl } };
                 }
                 throw new Error('URL not found');
